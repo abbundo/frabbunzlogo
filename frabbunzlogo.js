@@ -1,11 +1,11 @@
 /*global window, document */
 var bx = 8;
 var by = 7;
-var xb = 0;
-var yb = 0;
 var centerX = 0;
 var centerY = 0;
 var zDelta = [[0, 0], [0, 2], [-1, 2], [-2, 2], [-2, 1], [-2, 0], [-2, -1], [-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2], [2, -1], [2, 0], [2, 1], [2, 2], [1, 2]];
+var zDeltaLen = zDelta.length;
+var zDeltaHalfLen = parseInt(zDeltaLen / 2, 10);
 
 /*each zircle has a b factor and an [x0,y0] starting poit */
 var drawZircle = function (x0, y0, containerName, stepZ, px, py, k1) {
@@ -20,9 +20,9 @@ var drawZircle = function (x0, y0, containerName, stepZ, px, py, k1) {
     var i;
     var a;
     var b;
-    var k2 = 1 + Math.round(zDelta.length / 2);
-    while (k2 < (k1 + zDelta.length + 1)) {
-        i = k2 % zDelta.length;
+    var k2 = 2 + zDeltaHalfLen;
+    while (k2 < (k1 + zDeltaLen + 1)) {
+        i = k2 % zDeltaLen;
         if (gullo >= k1) {
             ctx.beginPath();
             ctx.strokeStyle = "rgba(109,109,109,0.8)";
@@ -72,13 +72,13 @@ $(document).ready(function () {
         var currX1 = centerX;
         var currY1 = centerY;
         var w = 0;
-        while (w < Math.round(zDelta.length / 2)) {
+        while (w < zDeltaHalfLen) {
             currX1 += zDelta[w][0] * bx * stepZ;
             currY1 += zDelta[w][1] * by * stepZ;
             drawZircle(currX1, currY1, "myCanvas", stepZ, zDelta[w + 1][0], zDelta[w + 1][1], w);
             w += 1;
         }
-        while (w < zDelta.length - 1) {
+        while (w < zDeltaLen - 1) {
             currX1 += zDelta[w][0] * bx * stepZ;
             currY1 += zDelta[w][1] * by * stepZ;
             drawZircle(currX1, currY1, "myCanvas", stepZ, zDelta[w + 1][0], zDelta[w + 1][1], w + 1);
