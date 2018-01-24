@@ -1,0 +1,93 @@
+<canvas id="myCanvas" width="400" height="400" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+
+<script>
+var PI2=2*Math.PI;
+var N=26; //number of slice
+var beta=PI2/N;//angle of each slice
+var alfa=0; //starting angle
+
+var xSize=400; 
+var ySize=400;
+var Xc=xSize/2; //virtual X center
+var Yc=ySize/6; //virtual Y center
+var R=Math.min(xSize,ySize)/9;//Radius of the single circle
+
+var Xc1=xSize/2; //second X center
+var Yc1=ySize/2; //second Y center
+var R2=ySize/2-R;
+var N2=N;
+
+var SliceFrom=(N>>1)-1;//starting slice
+var SliceTo=N;  //ending slice
+
+var rotationStep=Math.PI/180;
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
+ctx.arc(Xc,Yc,R,0,PI2);
+ctx.stroke();
+  
+function initArea(){
+  ctx.clearRect(0,0,xSize,ySize);
+  ctx.beginPath();
+  ctx.moveTo(0,Yc);
+  ctx.lineTo(xSize,Yc);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(Xc,0);
+  ctx.lineTo(Xc,ySize);
+  ctx.stroke();
+} 
+
+function drawPoly(Xc,Yc,alfa,SliceFrom,SliceTo){
+  var returnValue=new Array();
+  var p=0;
+  for(var i=SliceFrom;i<SliceTo;i++){
+    var Px0=R*Math.cos(i*beta+alfa);
+    var Py0=R*Math.sin(i*beta+alfa);
+    var Px1=R*Math.cos(i*beta+beta+alfa);
+    var Py1=R*Math.sin(i*beta+beta+alfa);
+    ctx.beginPath();
+    ctx.moveTo(Xc+Px0,Yc+Py0);
+    ctx.lineTo(Xc+Px1,Yc+Py1);
+    ctx.stroke();
+    returnValue[p++]=[Xc+Px0,Yc+Py0];
+  }
+  returnValue[p]=[Xc+Px1,Yc+Py1];
+  return returnValue;
+  //alfa=alfa-rotationStep;
+}
+
+var moCiTento=0;
+setInterval(function(){
+  initArea();
+  var matriX=new Array();
+  for(var j=0;j<N2;j++){
+      var Cx0=R2*Math.cos(j*(PI2/N2));
+      var Cy0=R2*Math.sin(j*(PI2/N2));
+      matriX[j]=drawPoly(Xc1+Cx0,Yc1+Cy0,alfa,SliceFrom+j,SliceTo+j);
+  }
+  matriX[j]=matriX[0];
+
+  for (j=0;j<matriX.length-1;j++){
+      for(var k=0;k<matriX[j].length;k++){
+          var Px0=matriX[j][k][0];
+          var Py0=matriX[j][k][1];
+          var Px1=matriX[j+1][k][0];
+          var Py1=matriX[j+1][k][1];
+          ctx.beginPath();
+          ctx.moveTo(Px0,Py0);
+          ctx.lineTo(Px1,Py1);
+          ctx.stroke();
+      }
+  }
+  alfa+=rotationStep;
+  moCiTento+=rotationStep;
+  if(moCiTento>beta){
+  	 moCiTento=0;
+     SliceFrom=(N>>1)-1;//starting slice
+		 SliceTo=N;  //ending slice
+     alfa=0;
+  }
+},1000/33);
+</script>
