@@ -1,95 +1,95 @@
 /*global window, document */
-var bx = 8;
-var by = 7;
-var centerX = 0;
-var centerY = 0;
-var zDelta = [[0, 0], [0, 2], [-1, 2], [-2, 2], [-2, 1], [-2, 0], [-2, -1], [-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2], [2, -1], [2, 0], [2, 1], [2, 2], [1, 2]];
-var zDeltaLen = zDelta.length;
-var zDeltaHalfLen = parseInt(zDeltaLen / 2, 10);
+var maxWide = 5;
+var minWide = 1;
+var wideDelta = 0.1;
+var factorScaleX = 4;
+var factorScaleY = 4;
+var centerX;
+var centerY;
+var basicPoints = [[0, 0], [0, 2], [-1, 2], [-2, 2], [-2, 1], [-2, 0], [-2, -1], [-2, -2], [-1, -2], [0, -2], [1, -2], [2, -2], [2, -1], [2, 0], [2, 1], [2, 2], [1, 2]];
+var basicPointsLen = basicPoints.length;
+var basicPointsHalfLen = parseInt('' + (basicPointsLen / 2), 10);
 
 /*each zircle has a b factor and an [x0,y0] starting poit */
 var drawZircle = function (x0, y0, containerName, stepZ, px, py, k1) {
     "use strict";
-    var c = $('#' + containerName)[0];
-    var ctx = c.getContext("2d");
-    ctx.strokeStyle = "rgba(109,109,109,0.8)";
-    ctx.beginPath();
+    var canvasContainer = $('#' + containerName)[0];
+    var context = canvasContainer.getContext("2d");
+    context.strokeStyle = "rgba(109,109,109,0.8)";
+    context.beginPath();
     var currX = x0;
     var currY = y0;
-    var gullo = 0;
+    var iterations = 0;
     var i;
     var a;
     var b;
-    var k2 = 2 + zDeltaHalfLen;
-    while (k2 < (k1 + zDeltaLen + 1)) {
-        i = k2 % zDeltaLen;
-        if (gullo >= k1) {
-            ctx.beginPath();
-            ctx.strokeStyle = "rgba(109,109,109,0.8)";
+    var currentStep = 2 + basicPointsHalfLen;
+    while (currentStep < (k1 + basicPointsLen + 1)) {
+        i = currentStep % basicPointsLen;
+        if (iterations >= k1) {
+            context.beginPath();
+            context.strokeStyle = "rgba(109,109,109,0.8)";
             a = currX;
             b = currY;
-            ctx.moveTo(a, b);
-            a = currX + zDelta[i][0] * bx;
-            b = currY + zDelta[i][1] * by;
-            ctx.lineTo(a, b);
-            a = currX + zDelta[i][0] * bx + stepZ * bx * px;
-            b = currY + zDelta[i][1] * by + stepZ * by * py;
-            ctx.lineTo(a, b);
-            a = currX + stepZ * bx * px;
-            b = currY + stepZ * by * py;
-            ctx.lineTo(a, b);
+            context.moveTo(a, b);
+            a = currX + basicPoints[i][0] * factorScaleX;
+            b = currY + basicPoints[i][1] * factorScaleY;
+            context.lineTo(a, b);
+            a = currX + basicPoints[i][0] * factorScaleX + stepZ * factorScaleX * px;
+            b = currY + basicPoints[i][1] * factorScaleY + stepZ * factorScaleY * py;
+            context.lineTo(a, b);
+            a = currX + stepZ * factorScaleX * px;
+            b = currY + stepZ * factorScaleY * py;
+            context.lineTo(a, b);
             a = currX;
             b = currY;
-            ctx.lineTo(a, b);
-            ctx.stroke();
+            context.lineTo(a, b);
+            context.stroke();
         }
-        gullo += 1;
-        currX += zDelta[i][0] * bx;
-        currY += zDelta[i][1] * by;
-        k2 += 1;
+        iterations += 1;
+        currX += basicPoints[i][0] * factorScaleX;
+        currY += basicPoints[i][1] * factorScaleY;
+        currentStep += 1;
     }
 };
 
 var resizeCanvas = function (containerName, canvasWrapper) {
     "use strict";
-    var width = Math.max($(window).width(), $('#' + canvasWrapper).outerWidth()) - 20;
-    var height = Math.max($(window).height(), $('#' + canvasWrapper).outerHeight()) - 67;
-    centerX = Math.round(width / 2);
-    centerY = Math.round(height / 2);
-    var c = $('#' + containerName)[0];
-    $(c).offset($('#' + canvasWrapper).offset());
-    c.setAttribute('width', width);
-    c.setAttribute('height', height);
+    var width = Math.min($(window).width(), $('#' + canvasWrapper).outerWidth());
+    var height = Math.min($(window).height(), $('#' + canvasWrapper).outerHeight());
+    centerX = width - 50;
+    centerY = Math.round(height / 2) -25;
+    var container = $('#' + containerName)[0];
+    $(container).offset($('#' + canvasWrapper).offset());
+    container.setAttribute('width', width);
+    container.setAttribute('height', height);
 };
 
 $(document).ready(function () {
     "use strict";
-    var stepZ = 1;
-    var extra = 0.1;
+    var stepZ = minWide;
+    var incrementDelta = wideDelta;
 
     setInterval(function () {
         resizeCanvas("myCanvas", "mainframecontent");
         var currX1 = centerX;
         var currY1 = centerY;
         var w = 0;
-        while (w < zDeltaHalfLen) {
-            currX1 += zDelta[w][0] * bx * stepZ;
-            currY1 += zDelta[w][1] * by * stepZ;
-            drawZircle(currX1, currY1, "myCanvas", stepZ, zDelta[w + 1][0], zDelta[w + 1][1], w);
+        while (w < basicPointsHalfLen) {
+            currX1 += basicPoints[w][0] * factorScaleX * stepZ;
+            currY1 += basicPoints[w][1] * factorScaleY * stepZ;
+            drawZircle(currX1, currY1, "myCanvas", stepZ, basicPoints[w + 1][0], basicPoints[w + 1][1], w);
             w += 1;
         }
-        while (w < zDeltaLen - 1) {
-            currX1 += zDelta[w][0] * bx * stepZ;
-            currY1 += zDelta[w][1] * by * stepZ;
-            drawZircle(currX1, currY1, "myCanvas", stepZ, zDelta[w + 1][0], zDelta[w + 1][1], w + 1);
+        while (w < basicPointsLen - 1) {
+            currX1 += basicPoints[w][0] * factorScaleX * stepZ;
+            currY1 += basicPoints[w][1] * factorScaleY * stepZ;
+            drawZircle(currX1, currY1, "myCanvas", stepZ, basicPoints[w + 1][0], basicPoints[w + 1][1], w + 1);
             w += 1;
         }
-        stepZ += extra;
-        if (stepZ > 5) {
-            extra = -0.1;
-        }
-        if (stepZ <= 1) {
-            extra = 0.1;
+        stepZ += incrementDelta;
+        if (stepZ > maxWide || stepZ <= minWide) {
+            incrementDelta = -incrementDelta;
         }
     }, 1000 / 24);
 
